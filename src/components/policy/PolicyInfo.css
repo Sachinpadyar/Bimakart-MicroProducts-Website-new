@@ -1,0 +1,78 @@
+
+
+.ContentColorChange h2,
+.ContentColorChange p,
+.ContentColorChange li,
+.ContentColorChange h4,
+.ContentColorChange button {
+    color: white;
+}
+
+.BackgroundColorCard {
+    background-color: #1D2027;
+}
+
+.OnlyMobile, .OnlyMobileImage{
+    display: none !important;
+}
+
+.WhatsappBtn{
+    margin-top: 30px;
+}
+@media (max-width:489px) {
+    .WhatsappBtn{
+    margin-top: 0px;
+}
+.OnlyMobile{
+    display: block !important;
+    margin-bottom: 30px;
+}
+
+.OnlyMobileImage{
+    display: block !important;
+    margin: 20px 0px;
+}
+.OnlyMobileImage img{
+    border-radius: 20px !important;
+}
+    .ContentColorChange h2,
+    .ContentColorChange p,
+    .ContentColorChange li,
+    .ContentColorChange h4,
+    .ContentColorChange button:not(.bg-brand-orange) {
+        color: black !important;
+    }
+
+    .BackgroundColorCard {
+        background-color: transparent !important;
+    }
+
+    .custom-policy-collapse {
+        border: 1px solid #e5e7eb !important;
+        border-radius: 8px !important;
+        background: white !important;
+        padding-bottom: 10px;
+    }
+
+    .custom-policy-collapse .ant-collapse-header {
+        padding: 12px 16px !important;
+    }
+
+    .custom-policy-collapse .ant-collapse-content-box {
+        padding: 0 16px 16px 16px !important;
+        color: black !important;
+    }
+}
+
+/* Ensure desktop content remains white/gray as per original */
+@media (min-width:490px) {
+    .desktop-text-change {
+        color: rgb(209, 213, 219) !important;
+        /* text-gray-300 */
+    }
+
+    /* h2.text-[26px],
+    h4.text-sm {
+        color: white !important;
+    } */
+}

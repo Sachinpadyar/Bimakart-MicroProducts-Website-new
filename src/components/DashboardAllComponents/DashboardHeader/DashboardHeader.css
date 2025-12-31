@@ -1,0 +1,97 @@
+.dashboard-header-container {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header-content {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.dashboard-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.dashboard-header-username {
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.dashboard-header-profile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #ff6b00;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff6b00;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dashboard-header-profile-icon:hover {
+    background-color: #fff7ed;
+    border-color: #ff8c00;
+}
+
+.dashboard-header-profile-icon svg {
+    stroke-width: 2;
+}
+
+.dashboard-header-signout-btn {
+    background-color: #ff6b00;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dashboard-header-signout-btn:hover {
+    background-color: #ff8c00;
+}
+
+.dashboard-header-signout-btn:active {
+    transform: scale(0.98);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-header-container {
+        padding: 10px 16px;
+    }
+
+    .dashboard-header-right {
+        gap: 12px;
+    }
+
+    .dashboard-header-username {
+        font-size: 13px;
+    }
+
+    .dashboard-header-profile-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .dashboard-header-signout-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+}
+
