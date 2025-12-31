@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Row, Col, Card, Typography, Select, Table } from "antd";
 import {
     ClipboardList,
