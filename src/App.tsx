@@ -1,5 +1,5 @@
 // @ts-check
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import KartavyaPolicyPage from "./pages/KartavyaPolicyPage";
 import { ProductListingPage } from "./pages/ProductListingPage";
 import AgentDashboardComponent from "./components/AgentDashboardComponent/AgentDashboardComponent";
