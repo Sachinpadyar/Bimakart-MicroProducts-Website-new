@@ -1,5 +1,3 @@
-
-
 .ContentColorChange h2,
 .ContentColorChange p,
 .ContentColorChange li,
@@ -12,29 +10,46 @@
     background-color: #1D2027;
 }
 
-.OnlyMobile, .OnlyMobileImage{
+.OnlyMobile,
+.OnlyMobileImage {
     display: none !important;
 }
 
-.WhatsappBtn{
+.WhatsappBtn {
     margin-top: 30px;
 }
-@media (max-width:489px) {
-    .WhatsappBtn{
-    margin-top: 0px;
-}
-.OnlyMobile{
-    display: block !important;
-    margin-bottom: 30px;
+
+.HeaderAdjustContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.OnlyMobileImage{
-    display: block !important;
-    margin: 20px 0px;
+.BtnFlex {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
-.OnlyMobileImage img{
-    border-radius: 20px !important;
-}
+
+@media (max-width:489px) {
+    .WhatsappBtn {
+        margin-top: 0px;
+    }
+
+    .OnlyMobile {
+        display: block !important;
+        margin-bottom: 30px;
+    }
+
+    .OnlyMobileImage {
+        display: block !important;
+        margin: 20px 0px;
+    }
+
+    .OnlyMobileImage img {
+        border-radius: 20px !important;
+    }
+
     .ContentColorChange h2,
     .ContentColorChange p,
     .ContentColorChange li,
@@ -62,6 +77,16 @@
         padding: 0 16px 16px 16px !important;
         color: black !important;
     }
+}
+
+.desktop-text-change svg{
+   fill: var(--dashboard-primary);
+   color: black !important;
+}
+
+.WhatsappBtn svg{
+    color: black !important;
+    fill: white  !important;
 }
 
 /* Ensure desktop content remains white/gray as per original */

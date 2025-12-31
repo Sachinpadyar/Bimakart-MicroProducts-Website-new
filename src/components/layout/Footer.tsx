@@ -1,10 +1,18 @@
 import { Mail, MapPin, Phone } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-
+import "./HeaderFooter.css"
 export function Footer() {
   return (
-    <footer className="bg-[#1c1f26] text-gray-300">
-      <div className="max-w-7xl mx-auto px-10 py-14">
+    <footer className="bg-[#1c1f26] text-gray-300" id="Footer">
+      <div>
+        <div className="FooterRedShape">
+          <img src="/Images/FooterRedShape.png" alt="" />
+        </div>
+        <div className="FooterBlackShape">
+          <img src="/Images/BlackFooterGradient.png" alt="" />
+        </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-10 py-14" id="FooterContent">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10">
           {/* Brand + Hours */}
           <div className="col-span-4">

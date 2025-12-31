@@ -21,6 +21,8 @@ import {
     Tooltip,
     ResponsiveContainer
 } from "recharts";
+import { Link } from "react-router-dom";
+import { GoArrowLeft } from "react-icons/go";
 import "./DashboardComponent.css";
 
 const { Title, Text } = Typography;
@@ -169,13 +171,36 @@ const AgentDashboardComponent = () => {
     );
 
     return (
-        <div className="dashboard-wrapper MainComponentWrapper SectionPaddingBottom">
-            <div>
+        <div className="dashboard-wrapper MainComponentWrapper ">
+            <div className="top-header-bar">
+                <div className="Container header-inner">
+                    <Link to="/"><img src="/logo.png" alt="Bimakart" className="header-logo" /></Link>
+                    <div className="header-right">
+                        <span className="user-name">Yalina Jamali</span>
+                        <div className="user-avatar">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Profile" />
+                        </div>
+                        <button className="sign-out-btn">Sign Out</button>
+                    </div>
+                </div>
+            </div>
+            <div className="Container SectionPaddingBottom ">
                 {/* Header Section */}
+
                 <div className="dashboard-header">
-                    <div className="dashboard-header-text">
-                        <div className="SectionMainHeading">Agent Dashboard</div>
-                        <Text>Track your sales, revenue, and performance at a glance</Text>
+                    <div>
+                        <div>
+                            <Link to="/">
+                                <button className="BtnFlex">
+                                    <GoArrowLeft /> Back
+                                </button>
+                            </Link>
+                        </div>
+                        <br />
+                        <div className="dashboard-header-text">
+                            <div className="SectionMainHeading">Agent Dashboard</div>
+                            <Text>Track your sales, revenue, and performance at a glance</Text>
+                        </div>
                     </div>
                     <div className="time-filters">
                         {timeFilters.map((filter) => (
@@ -229,9 +254,9 @@ const AgentDashboardComponent = () => {
                 <Row gutter={[24, 24]}>
                     {/* Performance Overview Chart */}
                     <Col xs={24} lg={14}>
-                        <Card className="section-card">
+                        <Card className="section-card FlexColumn">
                             <div className="section-header">
-                                <Title level={4} className="section-title">Performance Overview</Title>
+                                <div className="SectionCardTitle">Performance Overview</div>
                                 <div className="section-filters">
                                     <Select defaultValue="category" style={{ width: 150 }} suffixIcon={<ChevronDown size={14} />}>
                                         <Option value="category">Select a category</Option>
@@ -289,7 +314,7 @@ const AgentDashboardComponent = () => {
                     <Col xs={24} lg={10}>
                         <Card className="section-card">
                             <div className="section-header">
-                                <Title level={4} className="section-title">Policy Performance</Title>
+                                <div className="SectionCardTitle">Policy Performance</div>
                                 <Select defaultValue="range" style={{ width: 130 }} suffixIcon={<ChevronDown size={14} />}>
                                     <Option value="range">Select range</Option>
                                 </Select>

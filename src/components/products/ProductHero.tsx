@@ -1,5 +1,9 @@
+import { useEffect } from "react";
 import "./Products.css"
 export function ProductHero() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    }, []);
   return (
     <>
       <section id="ProdutImageRelativeContainer">

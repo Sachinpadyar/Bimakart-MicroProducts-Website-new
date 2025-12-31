@@ -5,8 +5,8 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+    <header className="bg-white border-b" id="Header">
+      <div className="Container px-4 sm:px-6 py-3 flex items-center justify-between">
         {/* LEFT: Hamburger (mobile only) */}
         <button
           className="lg:hidden text-2xl"
@@ -34,6 +34,11 @@ export function Header() {
           <button className="border px-3 py-1.5 rounded-md">
             Select Language
           </button>
+          <Link to="/agent-dashboard">
+            <button className="GlobalColorBrandBtn">
+              View Sales Dashboard
+            </button>
+          </Link>
         </nav>
       </div>
 

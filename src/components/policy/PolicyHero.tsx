@@ -3,7 +3,7 @@ import { PolicyInfo } from "@/components/policy/PolicyInfo";
 
 export function PolicyHero() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
+    <section className="Container SectionPaddingBottom">
       <div
         className="BackgroundColorCard rounded-xl shadow-card
           p-4 sm:p-6 lg:p-8
