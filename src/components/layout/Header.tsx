@@ -53,6 +53,11 @@ export function Header() {
             <button className="border px-3 py-2 rounded-md mt-2 w-fit">
               Select Language
             </button>
+            <Link to="/agent-dashboard">
+            <button className="GlobalColorBrandBtn">
+              View Sales Dashboard
+            </button>
+          </Link>
           </nav>
         </div>
       )}

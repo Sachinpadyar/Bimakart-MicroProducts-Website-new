@@ -315,17 +315,20 @@ const AgentDashboardComponent = () => {
                         <Card className="section-card">
                             <div className="section-header">
                                 <div className="SectionCardTitle">Policy Performance</div>
+                                <br />
                                 <Select defaultValue="range" style={{ width: 130 }} suffixIcon={<ChevronDown size={14} />}>
                                     <Option value="range">Select range</Option>
                                 </Select>
                             </div>
-                            <Table
+                            <div className="DashboardTableWrapper">
+                                <Table
                                 columns={columns}
                                 dataSource={policyData}
                                 pagination={false}
                                 className="policy-table"
                                 size="middle"
                             />
+                            </div>
                         </Card>
                     </Col>
                 </Row>

@@ -290,3 +290,16 @@
 .sign-out-btn:hover {
     background-color: #e65c00;
 }
+
+@media (max-width: 768px) {
+  .policy-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 200px;
+}
+
+.DashboardTableWrapper{
+    overflow-x: auto;
+}
+}
