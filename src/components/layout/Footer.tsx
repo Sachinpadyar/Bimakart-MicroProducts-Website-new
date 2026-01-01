@@ -12,7 +12,7 @@ export function Footer() {
           <img src="/Images/BlackFooterGradient.png" alt="" />
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-10 py-14" id="FooterContent">
+      <div className="Container" id="FooterContent">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10">
           {/* Brand + Hours */}
           <div className="col-span-4">

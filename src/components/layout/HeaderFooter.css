@@ -5,6 +5,7 @@
 }
 #Footer{
     position: relative;
+    overflow: hidden;
 }
 
 #Footer .FooterRedShape img{
@@ -21,4 +22,11 @@
 #FooterContent{
     position: relative;
     z-index: 5;
+    padding: 4rem 0rem;
+}
+
+@media (max-width: 768px) {
+    #FooterContent{
+        padding: 3rem 1rem;
+    }
 }
