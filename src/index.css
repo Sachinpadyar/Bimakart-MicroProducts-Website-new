@@ -14,7 +14,7 @@
 }
 
 
-:root{
+:root {
   --dashboard-bg: #f8f9fc;
   --dashboard-card-bg: #ffffff;
   --dashboard-border: #e5e7eb;
@@ -42,4 +42,22 @@
   --dashboard-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
   --dashboard-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
   --dashboard-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
