@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { MdOutlineHealthAndSafety } from "react-icons/md";
 
 interface Props {
   title: string;
@@ -60,7 +61,7 @@ export function ProductCard({
           flex items-center justify-center
         "
       >
-        Buy Now
+       <MdOutlineHealthAndSafety size={18}/>&nbsp; Buy Now
       </Link>
     </div>
   );

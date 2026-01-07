@@ -1,32 +1,34 @@
-#Header{
+#Header {
     position: sticky;
     top: 0px;
     z-index: 1000;
 }
-#Footer{
+
+#Footer {
     position: relative;
     overflow: hidden;
 }
 
-#Footer .FooterRedShape img{
+#Footer .FooterRedShape img {
     position: absolute;
     right: 0px;
 
 }
-#Footer .FooterBlackShape img{
+
+#Footer .FooterBlackShape img {
     position: absolute;
     left: 0px;
     z-index: 1;
 }
 
-#FooterContent{
+#FooterContent {
     position: relative;
     z-index: 5;
     padding: 4rem 0rem;
 }
 
 @media (max-width: 768px) {
-    #FooterContent{
+    #FooterContent {
         padding: 3rem 1rem;
     }
 }
