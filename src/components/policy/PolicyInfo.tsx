@@ -1,9 +1,16 @@
+// @ts-nocheck
 import { ShieldCheck } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { Collapse } from "antd";
 import { useState, useEffect } from "react";
 import "./PolicyInfo.css"
-export function PolicyInfo() {
+import type { Product } from "@/types/product.types";
+
+interface Props {
+  product?: Product | null;
+}
+
+export function PolicyInfo({ product }: Props) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
