@@ -1,8 +1,27 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const isSharedView = searchParams.get("view") === "shared";
+
+  // If in shared view, render a simplified header
+  if (isSharedView) {
+    return (
+      <header className="bg-white border-b" id="Header">
+        <div className="Container px-4 sm:px-6 py-3 flex items-center justify-between">
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:opacity-90"
+            aria-label="Go to home"
+          >
+            <img src="/logo.png" alt="Bimakart" className="h-10 w-auto" />
+          </Link>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="bg-white border-b" id="Header">
@@ -54,10 +73,10 @@ export function Header() {
               Select Language
             </button>
             <Link to="/agent-dashboard">
-            <button className="GlobalColorBrandBtn">
-              View Sales Dashboard
-            </button>
-          </Link>
+              <button className="GlobalColorBrandBtn">
+                View Sales Dashboard
+              </button>
+            </Link>
           </nav>
         </div>
       )}

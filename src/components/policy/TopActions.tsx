@@ -12,7 +12,6 @@ interface Props {
 
 export function TopActions({ product }: Props) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [showQrCode, setShowQrCode] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [getSignedUrl] = useLazyGetSignedUrlQuery();
 
@@ -20,125 +19,156 @@ export function TopActions({ product }: Props) {
     window.scrollTo(0, 0);
   }, []);
 
+  const getSharedUrl = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", "shared");
+    return url.toString();
+  };
+
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(getSharedUrl());
     alert("Link copied to clipboard!");
   };
+
+  const handleDownloadQrCode = async () => {
+    try {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(getSharedUrl())}`;
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "policy-qr-code.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download QR code:", error);
+      alert("Failed to download QR code");
+    }
+  };
+
+  const isSharedView = new URL(window.location.href).searchParams.get("view") === "shared";
 
   return (
     <div className="SectionPaddingTop SectionPaddingBottom">
       <div className="Container HeaderAdjustContainer">
-        <div>
-          <Link to="/">
-            <button className="BtnFlex">
-              <GoArrowLeft /> Back
-            </button>
-          </Link>
-        </div>
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
-          {/* Download Template */}
-          <button
-            className="
+        {!isSharedView && (
+          <div>
+            <Link to="/">
+              <button className="BtnFlex">
+                <GoArrowLeft /> Back
+              </button>
+            </Link>
+          </div>
+        )}
+        {!isSharedView && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+            {/* Download Template */}
+            <button
+              className="
           flex items-center justify-center gap-2
           border border-green-600 text-green-600
           px-3 sm:px-4 py-2
           rounded-md text-sm whitespace-nowrap
         "
-            aria-label="Download Template"
-          >
-            <FileSpreadsheet size={18} />
-            <span className="hidden sm:inline">Download Template</span>
-          </button>
+              aria-label="Download Template"
+            >
+              <FileSpreadsheet size={18} />
+              <span className="hidden sm:inline">Download Template</span>
+            </button>
 
-          {/* Upload Excel */}
-          <button
-            className="
+            {/* Upload Excel */}
+            <button
+              className="
           flex items-center justify-center gap-2
           bg-green-800 text-white
           px-3 sm:px-4 py-2
           rounded-md text-sm whitespace-nowrap
         "
-            aria-label="Upload Excel"
-          >
-            <Upload size={18} />
-            <span className="hidden sm:inline">Upload Excel</span>
-          </button>
+              aria-label="Upload Excel"
+            >
+              <Upload size={18} />
+              <span className="hidden sm:inline">Upload Excel</span>
+            </button>
 
-          {/* Share Button */}
-          <button
-            onClick={() => setIsShareModalOpen(true)}
-            className="
+            {/* Share Button */}
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="
           flex items-center justify-center gap-2
           border border-sky-300 text-sky-500 bg-sky-50
           px-3 sm:px-4 py-2
           rounded-md text-sm whitespace-nowrap
         "
-            aria-label="Share"
-          >
-            <Share2 size={18} />
-            <span className="hidden sm:inline">Share</span>
-          </button>
+              aria-label="Share"
+            >
+              <Share2 size={18} />
+              <span className="hidden sm:inline">Share</span>
+            </button>
 
-          {/* Download Flyer */}
-          <button
-            onClick={async () => {
-              if (product?.policyFlyer) {
-                try {
-                  setIsDownloading(true);
-                  const result = await getSignedUrl(product.policyFlyer).unwrap();
-                  console.log("Signed URL result:", result);
-                  
-                  if (result?.data) {
-                    // Fetch the file as a blob
-                    const response = await fetch(result.data);
-                    const blob = await response.blob();
-                    
-                    // Create a link to download the blob
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-                    link.href = url;
-                    
-                    // Extract filename from path or default to "brochure.pdf"
-                    const filename = product.policyFlyer.split("/").pop() || "brochure.pdf";
-                    link.setAttribute("download", filename);
-                    
-                    document.body.appendChild(link);
-                    link.click();
-                    
-                    // Cleanup
-                    link.parentNode?.removeChild(link);
-                    window.URL.revokeObjectURL(url);
+            {/* Download Flyer */}
+            <button
+              onClick={async () => {
+                if (product?.policyFlyer) {
+                  try {
+                    setIsDownloading(true);
+                    const result = await getSignedUrl(product.policyFlyer).unwrap();
+                    console.log("Signed URL result:", result);
+
+                    if (result?.data) {
+                      // Fetch the file as a blob
+                      const response = await fetch(result.data);
+                      const blob = await response.blob();
+
+                      // Create a link to download the blob
+                      const url = window.URL.createObjectURL(blob);
+                      const link = document.createElement("a");
+                      link.href = url;
+
+                      // Extract filename from path or default to "brochure.pdf"
+                      const filename = product.policyFlyer.split("/").pop() || "brochure.pdf";
+                      link.setAttribute("download", filename);
+
+                      document.body.appendChild(link);
+                      link.click();
+
+                      // Cleanup
+                      link.parentNode?.removeChild(link);
+                      window.URL.revokeObjectURL(url);
+                    }
+                  } catch (error) {
+                    console.error("Failed to download flyer:", error);
+                    alert("Failed to download flyer. Please try again.");
+                  } finally {
+                    setIsDownloading(false);
                   }
-                } catch (error) {
-                  console.error("Failed to download flyer:", error);
-                  alert("Failed to download flyer. Please try again.");
-                } finally {
-                  setIsDownloading(false);
+                } else {
+                  alert("No flyer available for this product.");
                 }
-              } else {
-                alert("No flyer available for this product.");
-              }
-            }}
-            disabled={isDownloading}
-            className={`
+              }}
+              disabled={isDownloading}
+              className={`
           flex items-center justify-center gap-2
           border border-orange-300 text-orange-500 bg-orange-50
           px-3 sm:px-4 py-2
           rounded-md text-sm whitespace-nowrap
           ${isDownloading ? 'opacity-70 cursor-not-allowed' : ''}
         `}
-            aria-label="Download Flyer"
-          >
-            {isDownloading ? (
-               <Loader2 size={18} className="animate-spin" />
-            ) : (
-               <Download size={18} />
-            )}
-            <span className="hidden sm:inline">
-              {isDownloading ? "Downloading..." : "Download Flyer"}
-            </span>
-          </button>
-        </div>
+              aria-label="Download Flyer"
+            >
+              {isDownloading ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <Download size={18} />
+              )}
+              <span className="hidden sm:inline">
+                {isDownloading ? "Downloading..." : "Download Flyer"}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Share Modal */}
@@ -151,7 +181,6 @@ export function TopActions({ product }: Props) {
               <button
                 onClick={() => {
                   setIsShareModalOpen(false);
-                  setShowQrCode(false);
                 }}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-1"
               >
@@ -160,52 +189,46 @@ export function TopActions({ product }: Props) {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-4">
-              {showQrCode ? (
-                <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-300">
-                  <div className="bg-white p-2 rounded-lg border border-gray-100 shadow-sm mb-4">
+            <div className="p-6 space-y-6">
+              {/* Link Section */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Page Link</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={getSharedUrl()}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600 focus:outline-none"
+                  />
+                  <button
+                    onClick={handleCopyLink}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                  >
+                    <Copy size={16} />
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              {/* QR Code Section */}
+              <div className="border-t border-gray-100 pt-6">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.href)}`}
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(getSharedUrl())}`}
                       alt="QR Code"
                       className="w-40 h-40"
                     />
                   </div>
                   <button
-                    onClick={() => setShowQrCode(false)}
-                    className="text-sm text-gray-500 hover:text-gray-800 underline"
+                    onClick={handleDownloadQrCode}
+                    className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    Back to options
+                    <Download size={16} />
+                    Download QR Code
                   </button>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <button
-                    onClick={handleCopyLink}
-                    className="flex items-center w-full gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group"
-                  >
-                    <div className="p-2 bg-blue-50 text-blue-600 rounded-full group-hover:bg-blue-100 transition-colors">
-                      <Copy size={20} />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-medium text-gray-900">Copy Link</p>
-                      <p className="text-xs text-gray-500">Copy page URL to clipboard</p>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => setShowQrCode(true)}
-                    className="flex items-center w-full gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group"
-                  >
-                    <div className="p-2 bg-purple-50 text-purple-600 rounded-full group-hover:bg-purple-100 transition-colors">
-                      <QrCode size={20} />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-medium text-gray-900">Share QR Code</p>
-                      <p className="text-xs text-gray-500">Generate a QR code for this page</p>
-                    </div>
-                  </button>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

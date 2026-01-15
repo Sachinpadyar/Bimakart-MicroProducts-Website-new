@@ -106,7 +106,16 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
 
         {/* Scrollable Container for Person Details */}
 
-
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="selfPurchase"
+            className="w-4 h-4 text-orange-600 rounded border-gray-300 focus:ring-orange-500"
+          />
+          <label htmlFor="selfPurchase" className="text-sm text-gray-600 cursor-pointer">
+            I am purchasing this policy for myself
+          </label>
+        </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Payment Option*</label>
           <div className="flex items-center gap-6">
@@ -131,6 +140,7 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
             </div>
           </div>
         </div>
+
         <div className={`space-y-4 ${numPeople > 1 ? 'max-h-[300px] overflow-y-auto pr-2 custom-scrollbar' : ''}`}>
           {Array.from({ length: numPeople }).map((_, index) => (
             <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
@@ -139,26 +149,17 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
               </div>
               <div className="p-4 bg-white">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input label="Age*" placeholder="" />
+                  {/* <Input label="Age*" placeholder="" />
                   <Input label="Vehicle Number*" placeholder="" />
                   <Input label="Accident Date*" placeholder="" />
-                  <Input label="Hospital Name*" placeholder="" />
+                  <Input label="Hospital Name*" placeholder="" /> */}
                   {product?.fields.filter(f => f.visible).map(renderField)}
                 </div>
               </div>
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="selfPurchase"
-            className="w-4 h-4 text-orange-600 rounded border-gray-300 focus:ring-orange-500"
-          />
-          <label htmlFor="selfPurchase" className="text-sm text-gray-600 cursor-pointer">
-            I am purchasing this policy for myself
-          </label>
-        </div>
+
 
 
 
