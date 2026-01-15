@@ -1,4 +1,4 @@
-import { Upload, FileSpreadsheet, QrCode, Copy, Download, Share2, X, Link as LinkIcon } from "lucide-react";
+import { Upload, FileSpreadsheet, QrCode, Copy, Download, Share2, X } from "lucide-react";
 import { GoArrowLeft } from "react-icons/go";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
