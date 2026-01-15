@@ -23,6 +23,7 @@ export interface Product {
     _id: string;
     name: string;
     policyIcon: string;
+    policyIconUrl: string;
     policyFlyer: string;
     shortDescription: string;
     detailedDescription: string;

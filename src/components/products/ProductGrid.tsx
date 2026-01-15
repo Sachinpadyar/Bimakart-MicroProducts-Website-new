@@ -45,6 +45,7 @@ export function ProductGrid() {
               title={product.name}
               description={product.shortDescription}
               policyIcon={product.policyIcon}
+              policyIconUrl={product.policyIconUrl}
             />
           ))}
         </div>

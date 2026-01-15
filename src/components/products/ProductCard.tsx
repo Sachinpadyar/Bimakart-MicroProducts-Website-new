@@ -5,6 +5,7 @@ interface Props {
   title: string;
   description: string;
   policyIcon?: string;
+  policyIconUrl?: string;
   highlighted?: boolean;
 }
 
@@ -12,6 +13,7 @@ export function ProductCard({
   title,
   description,
   policyIcon,
+  policyIconUrl,
   highlighted = false,
 }: Props) {
   return (
@@ -32,7 +34,7 @@ export function ProductCard({
         {/* Avatar */}
         <div className="ImageContainer">
           <img
-            src={policyIcon || "/policy-avatar.png"}
+            src={policyIconUrl || policyIcon || "/policy-avatar.png"}
             alt={title}
           />
         </div>
