@@ -12,8 +12,11 @@ export const productsApi = createApi({
         getProducts: builder.query<ProductsResponse, void>({
             query: () => '/api/products',
         }),
+        getSignedUrl: builder.query<{ status: string; message: string; data: string }, string>({
+            query: (fileKey) => `/api/upload/signed-url?fileKey=${fileKey}`,
+        }),
     }),
 });
 
 // Export hooks for usage in components
-export const { useGetProductsQuery } = productsApi;
+export const { useGetProductsQuery, useLazyGetSignedUrlQuery } = productsApi;

@@ -16,7 +16,7 @@ export default function KartavyaPolicyPage() {
     <>
       {/* <Header /> */}
       {/* <main className="bg-gray-50"> */}
-      <TopActions />
+      <TopActions product={product} />
       <PolicyHero product={product} isLoading={isLoading} />
       {/* </main> */}
       {/* <Footer /> */}
