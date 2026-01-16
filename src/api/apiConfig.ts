@@ -1,20 +1,23 @@
-
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { ProductsResponse } from '../types/product.types';
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type { ProductsResponse } from "../types/product.types";
 
 // Get API base URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 // Create API service using RTK Query
 export const productsApi = createApi({
-    reducerPath: 'productsApi',
+    reducerPath: "productsApi",
     baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
     endpoints: (builder) => ({
         getProducts: builder.query<ProductsResponse, void>({
-            query: () => '/api/products',
+            query: () => "/api/products",
         }),
-        downloadFile: builder.query<{ status: string; message: string; data: string }, string>({
-            query: (fileKey) => `/api/file/download?key=${fileKey}`,
+        downloadFile: builder.query<Blob, string>({
+            query: (fileKey) => ({
+                url: `/api/file/download?key=${fileKey}`,
+                responseHandler: (response) => response.blob(),
+            }),
         }),
     }),
 });
