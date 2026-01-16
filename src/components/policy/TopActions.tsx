@@ -1,9 +1,9 @@
-import { Upload, FileSpreadsheet, Copy, Download, Share2, X, Loader2 } from "lucide-react";
+import { Upload, FileSpreadsheet, Copy, Download, Share2, X, Loader2, Check } from "lucide-react";
 import { GoArrowLeft } from "react-icons/go";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { useLazyGetSignedUrlQuery } from "@/api/apiConfig";
+import { useLazyDownloadFileQuery } from "@/api/apiConfig";
 import type { Product } from "@/types/product.types";
 
 interface Props {
@@ -13,7 +13,8 @@ interface Props {
 export function TopActions({ product }: Props) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [getSignedUrl] = useLazyGetSignedUrlQuery();
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [downloadFile] = useLazyDownloadFileQuery();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -46,6 +47,53 @@ export function TopActions({ product }: Props) {
     } catch (error) {
       console.error("Failed to download QR code:", error);
       alert("Failed to download QR code");
+    }
+  };
+
+  const handleDownloadFlyer = async () => {
+    if (!product?.policyFlyer) {
+      alert("No flyer available for this product.");
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+      const result = await downloadFile(product.policyFlyer).unwrap();
+
+      if (result?.data) {
+        try {
+          // Attempt to fetch the file as a blob (allows for custom filename)
+          const response = await fetch(result.data);
+          if (!response.ok) throw new Error("Network response was not ok");
+          const blob = await response.blob();
+
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+
+          const filename = product.policyFlyer.split("/").pop() || "brochure.pdf";
+          link.setAttribute("download", filename);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        } catch (fetchError) {
+          console.warn("Blob download failed, falling back to direct link:", fetchError);
+          // Fallback: Direct download via window.open if CORS/Fetch fails
+          window.open(result.data, "_blank");
+        }
+
+        // Show success state briefly
+        setDownloadSuccess(true);
+        setTimeout(() => setDownloadSuccess(false), 3000);
+      } else {
+        alert("Failed to get download link. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to download flyer:", error);
+      alert("Failed to download flyer. Please try again.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -110,61 +158,29 @@ export function TopActions({ product }: Props) {
 
             {/* Download Flyer */}
             <button
-              onClick={async () => {
-                if (product?.policyFlyer) {
-                  try {
-                    setIsDownloading(true);
-                    const result = await getSignedUrl(product.policyFlyer).unwrap();
-                    console.log("Signed URL result:", result);
-
-                    if (result?.data) {
-                      // Fetch the file as a blob
-                      const response = await fetch(result.data);
-                      const blob = await response.blob();
-
-                      // Create a link to download the blob
-                      const url = window.URL.createObjectURL(blob);
-                      const link = document.createElement("a");
-                      link.href = url;
-
-                      // Extract filename from path or default to "brochure.pdf"
-                      const filename = product.policyFlyer.split("/").pop() || "brochure.pdf";
-                      link.setAttribute("download", filename);
-
-                      document.body.appendChild(link);
-                      link.click();
-
-                      // Cleanup
-                      link.parentNode?.removeChild(link);
-                      window.URL.revokeObjectURL(url);
-                    }
-                  } catch (error) {
-                    console.error("Failed to download flyer:", error);
-                    alert("Failed to download flyer. Please try again.");
-                  } finally {
-                    setIsDownloading(false);
-                  }
-                } else {
-                  alert("No flyer available for this product.");
-                }
-              }}
-              disabled={isDownloading}
+              onClick={handleDownloadFlyer}
+              disabled={isDownloading || downloadSuccess}
               className={`
           flex items-center justify-center gap-2
-          border border-orange-300 text-orange-500 bg-orange-50
-          px-3 sm:px-4 py-2
-          rounded-md text-sm whitespace-nowrap
-          ${isDownloading ? 'opacity-70 cursor-not-allowed' : ''}
+          border px-3 sm:px-4 py-2
+          rounded-md text-sm whitespace-nowrap transition-all duration-200
+          ${downloadSuccess
+                  ? "border-green-300 text-green-600 bg-green-50"
+                  : "border-orange-300 text-orange-500 bg-orange-50 hover:bg-orange-100"
+                }
+          ${isDownloading ? "opacity-70 cursor-not-allowed" : ""}
         `}
               aria-label="Download Flyer"
             >
               {isDownloading ? (
                 <Loader2 size={18} className="animate-spin" />
+              ) : downloadSuccess ? (
+                <Check size={18} />
               ) : (
                 <Download size={18} />
               )}
               <span className="hidden sm:inline">
-                {isDownloading ? "Downloading..." : "Download Flyer"}
+                {isDownloading ? "Downloading..." : downloadSuccess ? "Downloaded!" : "Download Flyer"}
               </span>
             </button>
           </div>

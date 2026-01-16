@@ -29,12 +29,12 @@ export function PolicyInfo({ product }: Props) {
       {/* Paragraph 1 */}
       {/* Paragraph 1 */}
       <p className="text-sm leading-relaxed text-gray-300 mb-4 desktop-text-change">
-        {product?.shortDescription || "Kartavya Policy is a comprehensive insurance solution designed to safeguard your entire workforce, including employees and workers under a single, unified plan. It is ideal for businesses operating in field-based or risk-prone environments."}
+        {product?.shortDescription}
       </p>
 
       {/* Paragraph 2 */}
       <p className="text-sm leading-relaxed text-gray-300 mb-6 desktop-text-change">
-        {product?.detailedDescription || "The policy provides coverage against workplace accidents, medical expenses, hospitalization, disability, and death benefits, ensuring both legal compliance and peace of mind. By choosing Kartavya Policy, organizations demonstrate responsibility, care, and commitment toward worker safety and well-being."}
+        {product?.detailedDescription}
       </p>
       <button className="mt-8 inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orangeHover px-4 py-2 rounded-md text-sm font-medium desktop-text-change OnlyMobile">
         <button className="mt-0.5" />
