@@ -33,9 +33,10 @@ export function PolicyInfo({ product }: Props) {
       </p>
 
       {/* Paragraph 2 */}
-      <p className="text-sm leading-relaxed text-gray-300 mb-6 desktop-text-change">
-        {product?.detailedDescription}
-      </p>
+      <div
+        className="text-sm leading-relaxed text-gray-300 mb-6 desktop-text-change"
+        dangerouslySetInnerHTML={{ __html: product?.detailedDescription || '' }}
+      />
       <button className="mt-8 inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orangeHover px-4 py-2 rounded-md text-sm font-medium desktop-text-change OnlyMobile">
         <button className="mt-0.5" />
         Buy Now
