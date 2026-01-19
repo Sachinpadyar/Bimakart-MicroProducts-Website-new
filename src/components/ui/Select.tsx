@@ -7,6 +7,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   options?: Option[];
   error?: string;
+  placeholder?: string;
 }
 
 export function Select({ label, options = [], value, onChange, placeholder = "Select an option", error, ...props }: SelectProps) {
