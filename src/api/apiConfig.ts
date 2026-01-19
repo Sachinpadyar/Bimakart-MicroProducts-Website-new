@@ -19,8 +19,11 @@ export const productsApi = createApi({
                 responseHandler: (response) => response.blob(),
             }),
         }),
+        getProductConfig: builder.query<ProductConfigResponse, string>({
+            query: (id) => `/api/products/${id}/config`,
+        }),
     }),
 });
 
 // Export hooks for usage in components
-export const { useGetProductsQuery, useLazyDownloadFileQuery } = productsApi;
+export const { useGetProductsQuery, useLazyDownloadFileQuery, useGetProductConfigQuery } = productsApi;

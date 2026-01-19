@@ -43,3 +43,10 @@ export interface ProductsResponse {
     message: string;
     data: Product[];
 }
+
+export interface ProductConfigResponse {
+    status: string;
+    statusCode: number;
+    message: string;
+    data: Product;
+}

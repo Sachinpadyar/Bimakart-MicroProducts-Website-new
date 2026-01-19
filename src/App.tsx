@@ -20,7 +20,7 @@ function App() {
 
         {/* Policy routes */}
         <Route path="/policies/kartavya" element={<KartavyaPolicyPage />} />
-        <Route path="/policies/kartavya/:policyName" element={<KartavyaPolicyPage />} />
+        <Route path="/policies/kartavya/:policyName/:policyId" element={<KartavyaPolicyPage />} />
         <Route path="/" element={<ProductListingPage />} />
         <Route path="/agent-dashboard" element={<AgentDashboardComponent />} />
 

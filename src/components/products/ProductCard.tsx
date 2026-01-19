@@ -7,6 +7,7 @@ interface Props {
   policyIcon?: string;
   policyIconUrl?: string;
   highlighted?: boolean;
+  id: string;
 }
 
 export function ProductCard({
@@ -15,6 +16,7 @@ export function ProductCard({
   policyIcon,
   policyIconUrl,
   highlighted = false,
+  id,
 }: Props) {
   return (
     <div
@@ -52,7 +54,7 @@ export function ProductCard({
 
       {/* FOOTER CTA */}
       <Link
-        to={`/policies/kartavya/${title.replace(/\s+/g, '-')}`}
+        to={`/policies/kartavya/${title.replace(/\s+/g, '-')}/${id}`}
         className="
           mt-auto
           w-full
