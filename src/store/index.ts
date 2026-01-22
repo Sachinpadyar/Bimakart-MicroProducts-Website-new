@@ -1,14 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { productsApi } from '../api/apiConfig';
+import { paymentApi } from '../api/paymentApi';
 
 export const store = configureStore({
     reducer: {
         // Add the API reducer
         [productsApi.reducerPath]: productsApi.reducer,
+        [paymentApi.reducerPath]: paymentApi.reducer,
     },
     // Add the API middleware
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(productsApi.middleware),
+        getDefaultMiddleware().concat(productsApi.middleware, paymentApi.middleware),
 });
 
 // Export types for TypeScript

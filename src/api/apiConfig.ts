@@ -22,8 +22,25 @@ export const productsApi = createApi({
         getProductConfig: builder.query<ProductConfigResponse, string>({
             query: (id) => `/api/products/${id}/config`,
         }),
+        downloadTemplate: builder.query<Blob, string>({
+            query: (productId) => ({
+                url: `https://bimakart.onrender.com/excel/${productId}`,
+                responseHandler: (response) => response.blob(),
+            }),
+        }),
+        validateExcel: builder.mutation<{ valid: boolean; message: string; errors?: string[] }, { productId: string; file: File }>({
+            query: ({ productId, file }) => {
+                const formData = new FormData();
+                formData.append("file", file);
+                return {
+                    url: `https://bimakart.onrender.com/validate-excel/${productId}`,
+                    method: "POST",
+                    body: formData,
+                };
+            },
+        }),
     }),
 });
 
 // Export hooks for usage in components
-export const { useGetProductsQuery, useLazyDownloadFileQuery, useGetProductConfigQuery } = productsApi;
+export const { useGetProductsQuery, useLazyDownloadFileQuery, useGetProductConfigQuery, useLazyDownloadTemplateQuery, useValidateExcelMutation } = productsApi;

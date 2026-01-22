@@ -1,10 +1,12 @@
 // @ts-nocheck
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { DatePicker } from "antd";
+import { DatePicker, Modal } from "antd";
 import dayjs from "dayjs";
+import { CheckCircle2 } from "lucide-react";
 
 import { useState } from "react";
+import { useCreatePaymentLinkMutation } from "@/api/paymentApi";
 
 const peopleOptions = Array.from({ length: 10 }, (_, i) => ({
   value: (i + 1).toString(),
@@ -19,6 +21,7 @@ interface Props {
 }
 
 export function BuyPolicyForm({ product, isLoading }: Props) {
+  const [createPaymentLink, { isLoading: isProcessingPayment }] = useCreatePaymentLinkMutation();
   const [numPeople, setNumPeople] = useState(1);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -27,6 +30,9 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
     mobile: "",
     persons: Array.from({ length: 10 }, () => ({ fieldData: {} }))
   });
+  const [isSelfPurchase, setIsSelfPurchase] = useState(false);
+  const [paymentOption, setPaymentOption] = useState<"myself" | "customer">("myself");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const validateField = (name: string, value: string, label: string) => {
@@ -81,7 +87,37 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
         });
       }
     } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
+      setFormData(prev => {
+        const newData = { ...prev, [field]: value };
+
+        // If self purchase is checked, sync Person 1 data
+        if (isSelfPurchase && (field === "firstName" || field === "lastName" || field === "email" || field === "mobile")) {
+          const newPersons = [...prev.persons];
+          const person1 = { ...newPersons[0] };
+          const person1FieldData = { ...person1.fieldData };
+
+          // Map top-level fields to dynamic fields for Person 1
+          product?.fields.filter(f => f.visible).forEach(f => {
+            const fieldName = f.fieldId.fieldName.toLowerCase();
+            const fieldId = f.fieldId._id;
+
+            if (field === "firstName" && (fieldName.includes("first name") || fieldName === "name")) {
+              person1FieldData[fieldId] = value;
+            } else if (field === "lastName" && fieldName.includes("last name")) {
+              person1FieldData[fieldId] = value;
+            } else if (field === "email" && fieldName.includes("email")) {
+              person1FieldData[fieldId] = value;
+            } else if (field === "mobile" && (fieldName.includes("mobile") || fieldName.includes("phone"))) {
+              person1FieldData[fieldId] = value;
+            }
+          });
+
+          newPersons[0] = { ...person1, fieldData: person1FieldData };
+          newData.persons = newPersons;
+        }
+
+        return newData;
+      });
       if (errors[field]) {
         setErrors(prev => {
           const newErrors = { ...prev };
@@ -90,6 +126,49 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
         });
       }
     }
+  };
+
+  const handleSelfPurchaseChange = (checked: boolean) => {
+    setIsSelfPurchase(checked);
+    setFormData(prev => {
+      const newPersons = [...prev.persons];
+      const person1 = { ...newPersons[0] };
+      const person1FieldData = { ...person1.fieldData };
+
+      // Sync or clear all applicable fields to Person 1
+      product?.fields.filter(f => f.visible).forEach(f => {
+        const fieldName = f.fieldId.fieldName.toLowerCase();
+        const fieldId = f.fieldId._id;
+
+        if (checked) {
+          if (fieldName.includes("first name") || fieldName === "name") {
+            person1FieldData[fieldId] = prev.firstName;
+          } else if (fieldName.includes("last name")) {
+            person1FieldData[fieldId] = prev.lastName;
+          } else if (fieldName.includes("email")) {
+            person1FieldData[fieldId] = prev.email;
+          } else if (fieldName.includes("mobile") || fieldName.includes("phone")) {
+            person1FieldData[fieldId] = prev.mobile;
+          } else if (fieldName === "full name") {
+            person1FieldData[fieldId] = `${prev.firstName || ""} ${prev.lastName || ""}`.trim();
+          }
+        } else {
+          // Clear only if it matches the sync criteria
+          if (fieldName.includes("first name") ||
+            fieldName === "name" ||
+            fieldName.includes("last name") ||
+            fieldName.includes("email") ||
+            fieldName.includes("mobile") ||
+            fieldName.includes("phone") ||
+            fieldName === "full name") {
+            person1FieldData[fieldId] = "";
+          }
+        }
+      });
+
+      newPersons[0] = { ...person1, fieldData: person1FieldData };
+      return { ...prev, persons: newPersons };
+    });
   };
 
   const handleBlur = (field: string, value: string, label: string, personIndex?: number, fieldId?: string) => {
@@ -102,7 +181,7 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { [key: string]: string } = {};
 
@@ -138,12 +217,79 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Form Submitted Successfully", {
-        ...formData,
-        numPeople,
-        persons: formData.persons.slice(0, numPeople)
-      });
-      alert("Form submitted successfully!");
+      console.log("Form Validation Passed. Preparing API Request...");
+
+      const basePrice = product?.sellingPrice || 0;
+
+      const totalAmount =
+        paymentOption === "myself"
+          ? basePrice * numPeople
+          : basePrice;
+
+      const productDescription = product?.shortDescription || "Insurance Premium";
+
+      try {
+        if (paymentOption === "myself") {
+          const payload = {
+            amount: totalAmount,
+            phone: formData.mobile,
+            description: `${productDescription} (${numPeople} person${numPeople > 1 ? "s" : ""})`,
+            name: `${formData.firstName} ${formData.lastName}`.trim(),
+            email: formData.email,
+            callbackUrl: "https://your-frontend.com/payment/status"
+          };
+
+          console.log("Hiting Payment API (Myself):", payload);
+          const response = await createPaymentLink(payload).unwrap();
+          console.log("Payment API Response:", response);
+          if (response.data?.paymentUrl) {
+            window.location.href = response.data.paymentUrl;
+          }
+        } else {
+          // Customer option - Send individual request for each person
+          const promises = Array.from({ length: numPeople }).map(async (_, index) => {
+            const pData = formData.persons[index].fieldData;
+
+            // Helper to find value by field name keywords
+            const findValue = (keywords: string[]) => {
+              const field = product?.fields.find(f =>
+                keywords.some(kw => f.fieldId.fieldName.toLowerCase().includes(kw))
+              );
+              return field ? pData[field.fieldId._id] : "";
+            };
+
+            const personFirstName = findValue(["first name", "name"]);
+            const personLastName = findValue(["last name"]);
+            const personName = `${personFirstName} ${personLastName}`.trim() || `Person ${index + 1}`;
+            const personEmail = findValue(["email"]) || formData.email;
+            const personPhone = findValue(["mobile", "phone"]) || formData.mobile;
+
+            const payload = {
+              amount: sellingPrice,
+              phone: personPhone,
+              description: `${productDescription} - ${personName}`,
+              name: personName,
+              email: personEmail,
+              callbackUrl: "https://your-frontend.com/payment/status"
+            };
+
+            console.log(`Hiting Payment API (Customer - Person ${index + 1}):`, payload);
+            const response = await createPaymentLink(payload).unwrap();
+            console.log(`Payment API Response (Person ${index + 1}):`, response);
+            return response;
+          });
+
+          await Promise.all(promises);
+        }
+
+        // Add 2 second artificial delay to show loading state as requested
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        setShowSuccessModal(true);
+      } catch (err) {
+        console.error("Payment API Error:", err);
+        alert("Failed to create payment link. Please check console.");
+      }
     } else {
       console.log("Form has errors", newErrors);
       // Find the first error and scroll to it if possible
@@ -330,6 +476,8 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
           <input
             type="checkbox"
             id="selfPurchase"
+            checked={isSelfPurchase}
+            onChange={(e) => handleSelfPurchaseChange(e.target.checked)}
             className="w-4 h-4 text-orange-600 rounded border-gray-300 focus:ring-orange-500"
           />
           <label htmlFor="selfPurchase" className="text-sm text-gray-600 cursor-pointer">
@@ -345,7 +493,8 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
                 name="paymentOption"
                 id="myself"
                 className="w-4 h-4 text-orange-600 focus:ring-orange-500 border-gray-300"
-                defaultChecked
+                checked={paymentOption === "myself"}
+                onChange={() => setPaymentOption("myself")}
               />
               <label htmlFor="myself" className="text-sm text-gray-700 cursor-pointer">Myself</label>
             </div>
@@ -355,6 +504,8 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
                 name="paymentOption"
                 id="customer"
                 className="w-4 h-4 text-orange-600 focus:ring-orange-500 border-gray-300"
+                checked={paymentOption === "customer"}
+                onChange={() => setPaymentOption("customer")}
               />
               <label htmlFor="customer" className="text-sm text-gray-700 cursor-pointer">Customer</label>
             </div>
@@ -383,10 +534,49 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
 
 
 
-        <button className="w-full bg-[#FD7E14] hover:bg-orange-600 text-white py-3 rounded-md font-semibold text-base transition-colors duration-200 mt-2">
-          Submit
+        <button
+          disabled={isProcessingPayment}
+          className="w-full bg-[#FD7E14] hover:bg-orange-600 disabled:bg-gray-400 text-white py-3 rounded-md font-semibold text-base transition-colors duration-200 mt-2"
+        >
+          {isProcessingPayment ? "Processing..." : "Submit"}
         </button>
       </form >
+
+      <Modal
+        open={showSuccessModal}
+        onCancel={() => setShowSuccessModal(false)}
+        footer={null}
+        centered
+        closable={false}
+        width={400}
+      >
+        <div className="py-6 text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+              <CheckCircle2 size={40} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-gray-900">Request Sent Successfully!</h3>
+            <p className="text-gray-600">
+              {paymentOption === "myself" ? (
+                <>Your payment request has been sent to <span className="font-semibold text-gray-900">{formData.mobile}</span>.</>
+              ) : (
+                <>Payment requests have been sent to <span className="font-semibold text-gray-900">{numPeople} persons</span> according to their provided mobile numbers.</>
+              )}
+              <br />
+              The link is valid for <span className="font-semibold text-gray-900">24 hours</span>.
+              Please confirm the payment to proceed.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowSuccessModal(false)}
+            className="w-full bg-[#FD7E14] hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition-colors duration-200"
+          >
+            Okay
+          </button>
+        </div>
+      </Modal>
     </div >
 
   );

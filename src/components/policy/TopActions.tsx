@@ -12,7 +12,8 @@ import { GoArrowLeft } from "react-icons/go";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { useLazyDownloadFileQuery } from "@/api/apiConfig";
+import { useLazyDownloadFileQuery, useLazyDownloadTemplateQuery, useValidateExcelMutation } from "@/api/apiConfig";
+import { useRef } from "react";
 import type { Product } from "@/types/product.types";
 
 interface Props {
@@ -23,7 +24,22 @@ export function TopActions({ product }: Props) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  const [isTemplateDownloading, setIsTemplateDownloading] = useState(false);
+  const [templateDownloadSuccess, setTemplateDownloadSuccess] = useState(false);
+
+  const [validationResult, setValidationResult] = useState<{
+    valid: boolean;
+    message: string;
+    errors?: string[];
+  } | null>(null);
+  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [downloadFile] = useLazyDownloadFileQuery();
+  const [downloadTemplate] = useLazyDownloadTemplateQuery();
+  const [validateExcel, { isLoading: isValidating }] = useValidateExcelMutation();
 
   useEffect(() => {
     globalThis.scrollTo(0, 0);
@@ -63,6 +79,58 @@ export function TopActions({ product }: Props) {
     } catch (error) {
       console.error("Failed to download QR code:", error);
       alert("Failed to download QR code");
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    if (!product?._id) return;
+
+    try {
+      setIsTemplateDownloading(true);
+      const blob = await downloadTemplate(product._id).unwrap();
+
+      const url = globalThis.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "policy-template.xlsx";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      globalThis.URL.revokeObjectURL(url);
+
+      setTemplateDownloadSuccess(true);
+      setTimeout(() => setTemplateDownloadSuccess(false), 3000);
+    } catch (error) {
+      console.error("Template download failed:", error);
+      alert("Template download failed");
+    } finally {
+      setIsTemplateDownloading(false);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !product?._id) return;
+
+    try {
+      setValidationResult(null);
+      const result = await validateExcel({ productId: product._id, file }).unwrap();
+      setValidationResult(result);
+      setIsValidationModalOpen(true);
+    } catch (error) {
+      console.error("Validation failed:", error);
+      setValidationResult({
+        valid: false,
+        message: "Validation failed. Please try again.",
+      });
+      setIsValidationModalOpen(true);
+    } finally {
+      // Clear input
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -128,20 +196,52 @@ export function TopActions({ product }: Props) {
           <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
             {/* Download Template */}
             <button
-              className="flex items-center justify-center gap-2 border border-green-600 text-green-600 px-3 sm:px-4 py-2 rounded-md text-sm whitespace-nowrap"
+              onClick={handleDownloadTemplate}
+              disabled={isTemplateDownloading || templateDownloadSuccess}
+              className={`flex items-center justify-center gap-2 border px-3 sm:px-4 py-2 rounded-md text-sm whitespace-nowrap transition-all duration-200 ${templateDownloadSuccess
+                ? "border-green-300 text-green-600 bg-green-50"
+                : "border-green-600 text-green-600 hover:bg-green-50"
+                } ${isTemplateDownloading ? "opacity-70 cursor-not-allowed" : ""}`}
               aria-label="Download Template"
             >
-              <FileSpreadsheet size={18} />
-              <span className="hidden sm:inline">Download Template</span>
+              {isTemplateDownloading ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : templateDownloadSuccess ? (
+                <Check size={18} />
+              ) : (
+                <FileSpreadsheet size={18} />
+              )}
+              <span className="hidden sm:inline">
+                {isTemplateDownloading
+                  ? "Downloading..."
+                  : templateDownloadSuccess
+                    ? "Downloaded!"
+                    : "Download Template"}
+              </span>
             </button>
 
             {/* Upload Excel */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".xlsx,.xls"
+              className="hidden"
+            />
             <button
-              className="flex items-center justify-center gap-2 bg-green-800 text-white px-3 sm:px-4 py-2 rounded-md text-sm whitespace-nowrap"
+              onClick={handleUploadClick}
+              disabled={isValidating}
+              className={`flex items-center justify-center gap-2 bg-green-800 text-white px-3 sm:px-4 py-2 rounded-md text-sm whitespace-nowrap transition-all duration-200 hover:bg-green-900 ${isValidating ? "opacity-70 cursor-not-allowed" : ""}`}
               aria-label="Upload Excel"
             >
-              <Upload size={18} />
-              <span className="hidden sm:inline">Upload Excel</span>
+              {isValidating ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <Upload size={18} />
+              )}
+              <span className="hidden sm:inline">
+                {isValidating ? "Validating..." : "Upload Excel"}
+              </span>
             </button>
 
             {/* Share */}
@@ -158,11 +258,10 @@ export function TopActions({ product }: Props) {
             <button
               onClick={handleDownloadFlyer}
               disabled={isDownloading || downloadSuccess}
-              className={`flex items-center justify-center gap-2 border px-3 sm:px-4 py-2 rounded-md text-sm whitespace-nowrap transition-all duration-200 ${
-                downloadSuccess
-                  ? "border-green-300 text-green-600 bg-green-50"
-                  : "border-orange-300 text-orange-500 bg-orange-50 hover:bg-orange-100"
-              } ${isDownloading ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`flex items-center justify-center gap-2 border px-3 sm:px-4 py-2 rounded-md text-sm whitespace-nowrap transition-all duration-200 ${downloadSuccess
+                ? "border-green-300 text-green-600 bg-green-50"
+                : "border-orange-300 text-orange-500 bg-orange-50 hover:bg-orange-100"
+                } ${isDownloading ? "opacity-70 cursor-not-allowed" : ""}`}
               aria-label="Download Flyer"
             >
               {downloadIcon}
@@ -224,6 +323,77 @@ export function TopActions({ product }: Props) {
                   Download QR Code
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Validation Result Modal */}
+      {isValidationModalOpen && validationResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden relative">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                {validationResult.valid ? (
+                  <Check className="text-green-600" size={20} />
+                ) : (
+                  <X className="text-red-600" size={20} />
+                )}
+                Validation {validationResult.valid ? "Successful" : "Failed"}
+              </h3>
+              <button
+                onClick={() => setIsValidationModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {validationResult.valid ? (
+                <div className="space-y-4 text-center">
+                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                    <Check size={32} />
+                  </div>
+                  <p className="text-green-700 font-medium">
+                    {validationResult.message || "Excel template is perfect!"}
+                  </p>
+                  <button
+                    onClick={() => setIsValidationModalOpen(false)}
+                    className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-red-600 font-medium">
+                    <X size={20} />
+                    <span>Excel has errors:</span>
+                  </div>
+                  <div className="bg-red-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+                    {validationResult.errors && validationResult.errors.length > 0 ? (
+                      <ul className="list-disc list-inside space-y-2 text-sm text-red-700">
+                        {validationResult.errors.map((err, idx) => (
+                          <li key={idx} className="leading-relaxed">
+                            {err}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-red-700">
+                        {validationResult.message || "Something went wrong with the validation."}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setIsValidationModalOpen(false)}
+                    className="w-full py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                  >
+                    Close & Fix Excel
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
