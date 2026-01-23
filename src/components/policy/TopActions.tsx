@@ -52,11 +52,11 @@ export function TopActions({ product }: Props) {
     globalThis.scrollTo(0, 0);
   }, []);
 
-  const getSharedUrl = () => {
-    const url = new URL(globalThis.location.href);
-    url.searchParams.set("view", "shared");
-    return url.toString();
-  };
+  // const getSharedUrl = () => {
+  //   const url = new URL(globalThis.location.href);
+  //   url.searchParams.set("view", "shared");
+  //   return url.toString();
+  // };
 
   const handleCopyLink = () => {
     if (shareData?.shareUrl) {
