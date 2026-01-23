@@ -9,10 +9,10 @@ import {
   Check,
 } from "lucide-react";
 import { GoArrowLeft } from "react-icons/go";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { useLazyDownloadFileQuery, useLazyDownloadTemplateQuery, useValidateExcelMutation } from "@/api/apiConfig";
+import { useLazyDownloadFileQuery, useLazyDownloadTemplateQuery, useValidateExcelMutation, useShareLinkMutation } from "@/api/apiConfig";
 import { useRef } from "react";
 import type { Product } from "@/types/product.types";
 
@@ -21,6 +21,11 @@ interface Props {
 }
 
 export function TopActions({ product }: Props) {
+  const [searchParams] = useSearchParams();
+  const isSharedView =
+    new URL(globalThis.location.href).searchParams.get("view") === "shared" ||
+    searchParams.has("ref");
+
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
@@ -34,12 +39,14 @@ export function TopActions({ product }: Props) {
     errors?: string[];
   } | null>(null);
   const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [shareData, setShareData] = useState<{ shareUrl: string; qrImage: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [downloadFile] = useLazyDownloadFileQuery();
   const [downloadTemplate] = useLazyDownloadTemplateQuery();
   const [validateExcel, { isLoading: isValidating }] = useValidateExcelMutation();
+  const [shareLink] = useShareLinkMutation();
 
   useEffect(() => {
     globalThis.scrollTo(0, 0);
@@ -52,30 +59,22 @@ export function TopActions({ product }: Props) {
   };
 
   const handleCopyLink = () => {
-    globalThis.navigator.clipboard.writeText(getSharedUrl());
-    alert("Link copied to clipboard!");
+    if (shareData?.shareUrl) {
+      globalThis.navigator.clipboard.writeText(shareData.shareUrl);
+      alert("Link copied to clipboard!");
+    }
   };
 
-  const handleDownloadQrCode = async () => {
+  const handleDownloadQrCode = () => {
+    if (!shareData?.qrImage) return;
+
     try {
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-        getSharedUrl(),
-      )}`;
-
-      const response = await fetch(qrUrl);
-      const blob = await response.blob();
-
-      const url = globalThis.URL.createObjectURL(blob);
       const link = document.createElement("a");
-
-      link.href = url;
+      link.href = shareData.qrImage;
       link.download = "policy-qr-code.png";
-
       document.body.appendChild(link);
       link.click();
       link.remove();
-
-      globalThis.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to download QR code:", error);
       alert("Failed to download QR code");
@@ -164,9 +163,6 @@ export function TopActions({ product }: Props) {
     }
   };
 
-  const isSharedView =
-    new URL(globalThis.location.href).searchParams.get("view") === "shared";
-
   /* ---------- Extracted UI state (Sonar S3358 fix) ---------- */
   let downloadIcon = <Download size={18} />;
   let downloadLabel = "Download Flyer";
@@ -246,7 +242,20 @@ export function TopActions({ product }: Props) {
 
             {/* Share */}
             <button
-              onClick={() => setIsShareModalOpen(true)}
+              onClick={() => {
+                if (product?._id) {
+                  shareLink({
+                    productId: product._id,
+                    agentId: "696215554740a67614441441"
+                  }).unwrap()
+                    .then((res) => {
+                      setShareData(res.data);
+                      setIsShareModalOpen(true);
+                      console.log("Share link tracked successfully");
+                    })
+                    .catch((err) => console.error("Failed to track share link", err));
+                }
+              }}
               className="flex items-center justify-center gap-2 border border-sky-300 text-sky-500 bg-sky-50 px-3 sm:px-4 py-2 rounded-md text-sm whitespace-nowrap"
               aria-label="Share"
             >
@@ -286,43 +295,49 @@ export function TopActions({ product }: Props) {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="page-link" className="text-sm font-medium text-gray-700">
-                  Page Link
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={getSharedUrl()}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600"
-                  />
-                  <button
-                    onClick={handleCopyLink}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium text-sm"
-                  >
-                    <Copy size={16} />
-                    Copy
-                  </button>
-                </div>
-              </div>
+              {shareData ? (
+                <>
+                  <div className="space-y-2">
+                    <label htmlFor="page-link" className="text-sm font-medium text-gray-700">
+                      Page Link
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={shareData.shareUrl}
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600"
+                      />
+                      <button
+                        onClick={handleCopyLink}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium text-sm"
+                      >
+                        <Copy size={16} />
+                        Copy
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="border-t border-gray-100 pt-6 flex flex-col items-center gap-4">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
-                    getSharedUrl(),
-                  )}`}
-                  alt="QR Code"
-                  className="w-40 h-40"
-                />
-                <button
-                  onClick={handleDownloadQrCode}
-                  className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-50"
-                >
-                  <Download size={16} />
-                  Download QR Code
-                </button>
-              </div>
+                  <div className="border-t border-gray-100 pt-6 flex flex-col items-center gap-4">
+                    <img
+                      src={shareData.qrImage}
+                      alt="QR Code"
+                      className="w-40 h-40"
+                    />
+                    <button
+                      onClick={handleDownloadQrCode}
+                      className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-50"
+                    >
+                      <Download size={16} />
+                      Download QR Code
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-center p-8">
+                  <Loader2 size={32} className="animate-spin text-sky-500" />
+                </div>
+              )}
             </div>
           </div>
         </div>

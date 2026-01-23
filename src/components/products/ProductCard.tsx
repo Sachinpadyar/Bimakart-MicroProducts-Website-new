@@ -54,7 +54,7 @@ export function ProductCard({
 
       {/* FOOTER CTA */}
       <Link
-        to={`/policies/kartavya/${title.replace(/\s+/g, '-')}/${id}`}
+        to={`/policies/buy/${id}`}
         className="
           mt-auto
           w-full

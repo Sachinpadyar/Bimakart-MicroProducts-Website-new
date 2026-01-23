@@ -39,8 +39,22 @@ export const productsApi = createApi({
                 };
             },
         }),
+        shareLink: builder.mutation<{ status: string; statusCode: number; message: string; data: { shareUrl: string; qrImage: string } }, { productId: string; agentId: string }>({
+            query: (body) => ({
+                url: "/api/share-link/",
+                method: "POST",
+                body,
+            }),
+        }),
+        validateShareLink: builder.mutation<{ status: string; statusCode: number; message: string }, { productId: string; ref: string; ts: string; sig: string }>({
+            query: (body) => ({
+                url: "/api/share-link/validate",
+                method: "POST",
+                body,
+            }),
+        }),
     }),
 });
 
 // Export hooks for usage in components
-export const { useGetProductsQuery, useLazyDownloadFileQuery, useGetProductConfigQuery, useLazyDownloadTemplateQuery, useValidateExcelMutation } = productsApi;
+export const { useGetProductsQuery, useLazyDownloadFileQuery, useGetProductConfigQuery, useLazyDownloadTemplateQuery, useValidateExcelMutation, useShareLinkMutation, useValidateShareLinkMutation } = productsApi;

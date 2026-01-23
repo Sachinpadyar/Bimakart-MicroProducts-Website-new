@@ -4,7 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 export function Header() {
   const [open, setOpen] = useState(false);
   const [searchParams] = useSearchParams();
-  const isSharedView = searchParams.get("view") === "shared";
+  const isSharedView = searchParams.get("view") === "shared" || searchParams.has("ref");
 
   // If in shared view, render a simplified header
   if (isSharedView) {
