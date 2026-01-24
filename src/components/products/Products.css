@@ -47,7 +47,7 @@
 .ImageOverContentContainer>div {
     max-width: 800px;
     margin: auto;
-  margin-top: 2.5rem;
+    margin-top: 2.5rem;
     /* height: 400px; */
 }
 
@@ -157,12 +157,13 @@
     .ProductsBackgroundImagesContainer {
         max-width: 100%;
     }
-    #ProdutImageRelativeContainer{
+
+    #ProdutImageRelativeContainer {
         margin: 15px;
-     
+
     }
 }
 
-.AdjustContainerPosition{
+.AdjustContainerPosition {
     min-height: 200px;
 }
