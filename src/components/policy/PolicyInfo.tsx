@@ -43,9 +43,9 @@ export function PolicyInfo({ product }: Props) {
       </button>
       {/* <br /> */}
       {/* Coverage heading */}
-      <h4 className="text-sm font-semibold mb-3 desktop-text-change">Coverage includes:</h4>
+      {/* <h4 className="text-sm font-semibold mb-3 desktop-text-change">Coverage includes:</h4>
 
-      {/* Coverage list */}
+      Coverage list
       <ul className="space-y-2 text-sm text-gray-200">
         <li className="flex items-start gap-2 desktop-text-change">
           <ShieldCheck size={16} className="text-brand-orange mt-1" />
@@ -63,7 +63,7 @@ export function PolicyInfo({ product }: Props) {
           <ShieldCheck size={16} className="text-brand-orange mt-1" />
           Covers Employees &amp; Workers Together
         </li>
-      </ul>
+      </ul> */}
 
       <div className="OnlyMobileImage">
         <img src="/AccordionMobileImage.jpg" alt="" />
