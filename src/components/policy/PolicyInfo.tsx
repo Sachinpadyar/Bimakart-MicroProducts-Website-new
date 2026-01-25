@@ -24,7 +24,16 @@ export function PolicyInfo({ product }: Props) {
     return () => mediaQuery.removeEventListener("change", handleValueChange);
   }, []);
 
+  const handleWhatsAppClick = () => {
+    const phoneNumber = "917770001719";
+    const productName = product?.name || "Kartavya Policy";
+    const message = encodeURIComponent(`Hi, I am interested in the ${productName} policy. Please provide more details.`);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  };
+
   const content = (
+
     <>
       {/* Paragraph 1 */}
       {/* Paragraph 1 */}
@@ -71,10 +80,14 @@ export function PolicyInfo({ product }: Props) {
 
 
       {/* WhatsApp button */}
-      <button className=" inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orangeHover px-4 py-2 rounded-md text-sm font-medium desktop-text-change WhatsappBtn">
+      <button 
+        onClick={handleWhatsAppClick}
+        className=" inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orangeHover px-4 py-2 rounded-md text-sm font-medium desktop-text-change WhatsappBtn"
+      >
         <FaWhatsapp size={18} className="mt-0.5" />
         Chat on Whatsapp
       </button>
+
     </>
   );
 
