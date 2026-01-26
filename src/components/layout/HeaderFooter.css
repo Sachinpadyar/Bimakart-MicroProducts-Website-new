@@ -27,6 +27,11 @@
     padding: 4rem 0rem;
 }
 
+.LargetextFooter {
+    font-size: 20px;
+    color: white !important;
+}
+
 @media (max-width: 768px) {
     #FooterContent {
         padding: 3rem 1rem;

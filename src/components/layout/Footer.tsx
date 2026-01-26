@@ -18,7 +18,7 @@ export function Footer() {
           <div className="col-span-4">
             <div className="mb-4">
               <img src="/logo.png" alt="Bimakart" className="h-10 w-auto mb-2" />
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-gray-400 leading-relaxed LargetextFooter">
                 "Insure Today, Drive Safe Tomorrow." – Bimakart Center
               </p>
             </div>
@@ -42,17 +42,21 @@ export function Footer() {
               <p className="text-white font-semibold mb-2">Social Media</p>
 
               <div className="flex items-center gap-3">
-                <div
+                <a
+                  href="https://wa.me/917770001719"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="
                     w-8 h-8
                     rounded
-                  bg-[#2a2e36]
+                    bg-[#2a2e36]
                     flex items-center justify-center
-                  text-white
-                "
+                    text-white
+                    hover:bg-[#25D366] transition-colors
+                  "
                 >
                   <FaWhatsapp size={18} />
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -61,11 +65,11 @@ export function Footer() {
           <div className="col-span-2">
             <p className="text-white font-semibold mb-4">Insurance Products</p>
             <ul className="space-y-2 text-gray-400">
-              <li>Car Insurance</li>
-              <li>Bike Insurance</li>
-              <li>Health Insurance</li>
-              <li>Life Insurance</li>
-              <li>Commercial Insurance</li>
+              <li><a href="https://bimakart.in/four_wheeler" target="_blank" rel="noopener noreferrer">Four Wheeler</a></li>
+              <li><a href="https://bimakart.in/two_wheeler" target="_blank" rel="noopener noreferrer">Two Wheeler</a></li>
+              <li><a href="https://bimakart.in/health_insurance" target="_blank" rel="noopener noreferrer">Health Insurance</a></li>
+              <li><a href="https://bimakart.in/life_policy" target="_blank" rel="noopener noreferrer">Life Policy</a></li>
+              <li><a href="https://bimakart.in/commercial_wheeler" target="_blank" rel="noopener noreferrer">Commercial Wheeler</a></li>
             </ul>
           </div>
 
@@ -73,11 +77,11 @@ export function Footer() {
           <div className="col-span-2">
             <p className="text-white font-semibold mb-4">About Bimakart</p>
             <ul className="space-y-2 text-gray-400">
-              <li>Contact</li>
-              <li>Privacy &amp; Policy</li>
-              <li>Refund &amp; Cancellation</li>
-              <li>Terms &amp; Conditions</li>
-              <li>Testimonial</li>
+              <li><a href="https://bimakart.in/contact-us" target="_blank" rel="noopener noreferrer">Contact Us</a></li>
+              <li><a href="https://bimakart.in/privacy_policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
+              <li><a href="https://bimakart.in/refund_policy" target="_blank" rel="noopener noreferrer">Refund Policy</a></li>
+              <li><a href="https://bimakart.in/terms_condition" target="_blank" rel="noopener noreferrer">Terms & Condition</a></li>
+              <li><a href="https://bimakart.in/testimonial_page" target="_blank" rel="noopener noreferrer">Testimonial Page</a></li>
             </ul>
           </div>
 
@@ -89,7 +93,7 @@ export function Footer() {
               {/* Phone */}
               <li className="flex items-center gap-3">
                 <Phone size={14} className="mt-0.5" />
-                <a href="tel:+917770007179">+91 7770007179</a>
+                <a href="tel:+917770001719">+91 77700 01719</a>
               </li>
 
               {/* Email */}
@@ -100,18 +104,24 @@ export function Footer() {
 
               {/* Address */}
               <li className="flex items-start gap-3">
-                <MapPin size={20} className="mt-1" />
-                <span>
+                <MapPin size={21} className="mt-1" />
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=1st+Floor,+Suman+Education+Society+Campus,+Near+General+Karipappa+Bridge,+Moghdoot,+Rajendra+Nagar,+Borivali,+Mumbai,+Maharashtra+400066"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                >
                   1st Floor, Suman Education Society Campus,
                   <br />
                   Near General Karipappa Bridge, Moghdoot,
                   <br />
                   Rajendra Nagar, Borivali, Mumbai, Maharashtra 400066
-                </span>
+                </a>
               </li>
 
               {/* Company info (no icon needed) */}
-              <li>Incio Fintech Pvt. Ltd.</li>
+              <p>Incio Fintech Pvt. Ltd.</p>
+              <li></li>
               <li>CIN No. U82990MH2023PTC412314</li>
               <li>GSTIN No. 27AAHCS5688D1ZI</li>
               <li>IRDAI Registration No: CA018</li>

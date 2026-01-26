@@ -6,7 +6,8 @@ import dayjs from "dayjs";
 import { CheckCircle2 } from "lucide-react";
 
 import { useState } from "react";
-import { useCreatePaymentLinkMutation } from "@/api/paymentApi";
+import { useSearchParams } from "react-router-dom";
+import { useBuyPolicyMutation } from "@/api/policyApi";
 
 const peopleOptions = Array.from({ length: 10 }, (_, i) => ({
   value: (i + 1).toString(),
@@ -21,7 +22,8 @@ interface Props {
 }
 
 export function BuyPolicyForm({ product, isLoading }: Props) {
-  const [createPaymentLink, { isLoading: isProcessingPayment }] = useCreatePaymentLinkMutation();
+  const [searchParams] = useSearchParams();
+  const [buyPolicy, { isLoading: isSubmitting }] = useBuyPolicyMutation();
   const [numPeople, setNumPeople] = useState(1);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -99,16 +101,16 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
           // Map top-level fields to dynamic fields for Person 1
           product?.fields.filter(f => f.visible).forEach(f => {
             const fieldName = f.fieldId.fieldName.toLowerCase();
-            const fieldId = f.fieldId._id;
+            const fId = f.fieldId._id;
 
             if (field === "firstName" && (fieldName.includes("first name") || fieldName === "name")) {
-              person1FieldData[fieldId] = value;
+              person1FieldData[fId] = value;
             } else if (field === "lastName" && fieldName.includes("last name")) {
-              person1FieldData[fieldId] = value;
+              person1FieldData[fId] = value;
             } else if (field === "email" && fieldName.includes("email")) {
-              person1FieldData[fieldId] = value;
+              person1FieldData[fId] = value;
             } else if (field === "mobile" && (fieldName.includes("mobile") || fieldName.includes("phone"))) {
-              person1FieldData[fieldId] = value;
+              person1FieldData[fId] = value;
             }
           });
 
@@ -138,19 +140,19 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
       // Sync or clear all applicable fields to Person 1
       product?.fields.filter(f => f.visible).forEach(f => {
         const fieldName = f.fieldId.fieldName.toLowerCase();
-        const fieldId = f.fieldId._id;
+        const fId = f.fieldId._id;
 
         if (checked) {
           if (fieldName.includes("first name") || fieldName === "name") {
-            person1FieldData[fieldId] = prev.firstName;
+            person1FieldData[fId] = prev.firstName;
           } else if (fieldName.includes("last name")) {
-            person1FieldData[fieldId] = prev.lastName;
+            person1FieldData[fId] = prev.lastName;
           } else if (fieldName.includes("email")) {
-            person1FieldData[fieldId] = prev.email;
+            person1FieldData[fId] = prev.email;
           } else if (fieldName.includes("mobile") || fieldName.includes("phone")) {
-            person1FieldData[fieldId] = prev.mobile;
+            person1FieldData[fId] = prev.mobile;
           } else if (fieldName === "full name") {
-            person1FieldData[fieldId] = `${prev.firstName || ""} ${prev.lastName || ""}`.trim();
+            person1FieldData[fId] = `${prev.firstName || ""} ${prev.lastName || ""}`.trim();
           }
         } else {
           // Clear only if it matches the sync criteria
@@ -161,7 +163,7 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
             fieldName.includes("mobile") ||
             fieldName.includes("phone") ||
             fieldName === "full name") {
-            person1FieldData[fieldId] = "";
+            person1FieldData[fId] = "";
           }
         }
       });
@@ -183,6 +185,7 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Submit button clicked, starting validation...");
     const newErrors: { [key: string]: string } = {};
 
     // Validate static fields
@@ -217,82 +220,74 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Form Validation Passed. Preparing API Request...");
+      console.log("Form Validation Passed. Preparing Policy Buy API Request...");
 
-      const basePrice = product?.sellingPrice || 0;
+      const insuredPersons = Array.from({ length: numPeople }).map((_, index) => {
+        const pData = formData.persons[index].fieldData;
+        const mappedData: Record<string, any> = {};
 
-      const totalAmount =
-        paymentOption === "myself"
-          ? basePrice * numPeople
-          : basePrice;
+        product?.fields.filter(f => f.visible).forEach(field => {
+          const fieldKey = field.fieldId.key;
+          const fieldValue = pData[field.fieldId._id];
+          if (fieldValue !== undefined) {
+            mappedData[fieldKey] = fieldValue;
+          }
+        });
 
-      const productDescription = product?.shortDescription || "Insurance Premium";
+        return {
+          personIndex: index + 1,
+          data: mappedData
+        };
+      });
+
+      console.log("Validation Passed. Payload prepared, hitting API now...");
+
+      const payload = {
+        productId: product?._id || "",
+
+        // ✅ service wants this
+        primaryApplicant: {
+          firstName: (formData.firstName || "").trim(),
+          lastName: (formData.lastName || "").trim(),
+          email: (formData.email || "").trim(),
+          mobile: (formData.mobile || "").trim(),
+        },
+
+        // ✅ schema/service may also use these at root
+        firstName: (formData.firstName || "").trim(),
+        lastName: (formData.lastName || "").trim(),
+        email: (formData.email || "").trim(),
+        mobile: (formData.mobile || "").trim(),
+
+        numberOfPeople: numPeople,
+        insuredPersons, // keep as you already build dynamically
+
+        // ✅ MUST be exactly these values
+        payerType: paymentOption === "myself" ? "SELF" : "CUSTOMER",
+
+        ref: searchParams.get("ref") || undefined,
+        ts: searchParams.get("ts") || undefined,
+        sig: searchParams.get("sig") || undefined,
+      };
+
 
       try {
-        if (paymentOption === "myself") {
-          const payload = {
-            amount: totalAmount,
-            phone: formData.mobile,
-            description: `${productDescription} (${numPeople} person${numPeople > 1 ? "s" : ""})`,
-            name: `${formData.firstName} ${formData.lastName}`.trim(),
-            email: formData.email,
-            callbackUrl: "https://your-frontend.com/payment/status"
-          };
+        console.log("Request Payload:", payload);
+        const response = await buyPolicy(payload).unwrap();
+        console.log("API Result:", response);
 
-          console.log("Hiting Payment API (Myself):", payload);
-          const response = await createPaymentLink(payload).unwrap();
-          console.log("Payment API Response:", response);
-          if (response.data?.paymentUrl) {
-            window.location.href = response.data.paymentUrl;
-          }
+        if (response.data?.paymentUrl) {
+          window.location.href = response.data.paymentUrl;
         } else {
-          // Customer option - Send individual request for each person
-          const promises = Array.from({ length: numPeople }).map(async (_, index) => {
-            const pData = formData.persons[index].fieldData;
-
-            // Helper to find value by field name keywords
-            const findValue = (keywords: string[]) => {
-              const field = product?.fields.find(f =>
-                keywords.some(kw => f.fieldId.fieldName.toLowerCase().includes(kw))
-              );
-              return field ? pData[field.fieldId._id] : "";
-            };
-
-            const personFirstName = findValue(["first name", "name"]);
-            const personLastName = findValue(["last name"]);
-            const personName = `${personFirstName} ${personLastName}`.trim() || `Person ${index + 1}`;
-            const personEmail = findValue(["email"]) || formData.email;
-            const personPhone = findValue(["mobile", "phone"]) || formData.mobile;
-
-            const payload = {
-              amount: sellingPrice,
-              phone: personPhone,
-              description: `${productDescription} - ${personName}`,
-              name: personName,
-              email: personEmail,
-              callbackUrl: "https://your-frontend.com/payment/status"
-            };
-
-            console.log(`Hiting Payment API (Customer - Person ${index + 1}):`, payload);
-            const response = await createPaymentLink(payload).unwrap();
-            console.log(`Payment API Response (Person ${index + 1}):`, response);
-            return response;
-          });
-
-          await Promise.all(promises);
+          setShowSuccessModal(true);
         }
-
-        // Add 2 second artificial delay to show loading state as requested
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        setShowSuccessModal(true);
       } catch (err) {
-        console.error("Payment API Error:", err);
-        alert("Failed to create payment link. Please check console.");
+        console.error("API Error Response:", err);
+        alert("Submission Failed: " + (err.data?.message || err.message || "Unknown error"));
       }
     } else {
-      console.log("Form has errors", newErrors);
-      // Find the first error and scroll to it if possible
+      console.warn("API NOT HIT due to validation errors:");
+      console.table(newErrors);
       const firstErrorKey = Object.keys(newErrors)[0];
       const element = document.getElementsByName(firstErrorKey)[0];
       if (element) element.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -372,7 +367,7 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
       );
     }
 
-    // Calendar/Date field
+    // Calendar/Date field ✅ FIXED: DD/MM/YYYY (not ISO)
     if (dataType === 'calendar' || dataType === 'date') {
       return (
         <div key={_id} className="w-full">
@@ -381,9 +376,9 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
           </label>
           <DatePicker
             placeholder={`Select ${fieldName}`}
-            value={value ? dayjs(value) : null}
+            value={value ? dayjs(value, "DD/MM/YYYY") : null}
             onChange={(date) => {
-              const dateValue = date ? date.toISOString() : "";
+              const dateValue = date ? date.format("DD/MM/YYYY") : "";
               handleInputChange(_id, dateValue, personIndex, _id);
             }}
             onBlur={() => handleBlur(_id, value, fieldName, personIndex, _id)}
@@ -470,8 +465,6 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
           </div>
         </div>
 
-        {/* Scrollable Container for Person Details */}
-
         <div className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -484,6 +477,7 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
             I am purchasing this policy for myself
           </label>
         </div>
+
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Payment Option*</label>
           <div className="flex items-center gap-6">
@@ -520,10 +514,6 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
               </div>
               <div className="p-4 bg-white">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* <Input label="Age*" placeholder="" />
-                   <Input label="Vehicle Number*" placeholder="" />
-                   <Input label="Accident Date*" placeholder="" />
-                   <Input label="Hospital Name*" placeholder="" /> */}
                   {product?.fields.filter(f => f.visible).map(field => renderField(field, index))}
                 </div>
               </div>
@@ -531,16 +521,13 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
           ))}
         </div>
 
-
-
-
         <button
-          disabled={isProcessingPayment}
+          disabled={isSubmitting}
           className="w-full bg-[#FD7E14] hover:bg-orange-600 disabled:bg-gray-400 text-white py-3 rounded-md font-semibold text-base transition-colors duration-200 mt-2"
         >
-          {isProcessingPayment ? "Processing..." : "Submit"}
+          {isSubmitting ? "Processing..." : "Submit"}
         </button>
-      </form >
+      </form>
 
       <Modal
         open={showSuccessModal}
@@ -577,7 +564,6 @@ export function BuyPolicyForm({ product, isLoading }: Props) {
           </button>
         </div>
       </Modal>
-    </div >
-
+    </div>
   );
 }
